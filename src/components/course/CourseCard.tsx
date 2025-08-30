@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,8 @@ import { Lock, Play, CheckCircle, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Course } from "@/data/courses";
 import { Link } from "react-router-dom";
+import { PaymentModal } from "@/components/payment/PaymentModal";
+import { toast } from 'sonner';
 
 interface CourseCardProps {
   course: Course;
@@ -14,10 +16,16 @@ interface CourseCardProps {
 
 export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
   const { t } = useLanguage();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const progressPercentage = course.totalLessons > 0 
     ? (course.completedLessons / course.totalLessons) * 100 
     : 0;
+
+  const handlePaymentSuccess = () => {
+    // In a real app, this would update the course enrollment status
+    toast.success('Course enrolled successfully! You can now access all lessons.');
+  };
 
   const getStatusBadge = () => {
     if (course.isCompleted) {
@@ -81,7 +89,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
             {t('course.tryFree')}
           </Button>
         </Link>
-        <Button className="w-full gradient-secondary shadow-button transition-bounce hover:scale-105">
+        <Button 
+          onClick={() => setShowPaymentModal(true)}
+          className="w-full gradient-secondary shadow-button transition-bounce hover:scale-105"
+        >
           {t('course.enroll')} - {course.currency}{course.price}
         </Button>
       </div>
@@ -139,6 +150,13 @@ export const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
 
         {getActionButton()}
       </CardContent>
+      
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        course={course}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </Card>
   );
 };
